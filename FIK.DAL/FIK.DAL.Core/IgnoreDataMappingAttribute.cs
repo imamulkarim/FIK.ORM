@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace FIK.DAL.Core
+namespace FIK.ORM
 {
-    public class FIK_NoCUDAttribute : Attribute
+    public class IgnoreDataMappingAttribute : Attribute
     {
 
     }
