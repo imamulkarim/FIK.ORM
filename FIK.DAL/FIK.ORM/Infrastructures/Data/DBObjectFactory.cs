@@ -46,7 +46,7 @@ namespace FIK.ORM.Infrastructures.Data
                     //DBConnectionProvider.RegisterFactory<System.Data.SqlClient.SqlDataAdapter>(sqlAdapterFactory);
                     //DBConnectionProvider.RegisterFactory<System.Data.SqlClient.SqlTransaction>(sqlTransactionFactory);
 #elif NET6_0_OR_GREATER
-                    DBConnection = new Microsoft.Data.SqlClient.SqlConnection(dbConnection);
+                    DBConnection = new System.Data.SqlClient.SqlConnection(dbConnection);
                     //System.Data.IDbCommand sqlCommandFactory = new Microsoft.Data.SqlClient.SqlCommand();
                     //System.Data.IDbDataAdapter sqlAdapterFactory = new Microsoft.Data.SqlClient.SqlDataAdapter();
                     //System.Data.IDbTransaction sqlTransactionFactory = null!;
@@ -115,7 +115,7 @@ namespace FIK.ORM.Infrastructures.Data
 #if NET40
                     dbDataAdapter = new System.Data.SqlClient.SqlDataAdapter();
 #elif NET6_0_OR_GREATER
-                    dbDataAdapter = new Microsoft.Data.SqlClient.SqlDataAdapter();
+                    dbDataAdapter = new System.Data.SqlClient.SqlDataAdapter();
 #endif
                     break;
                 case DatabaseProvider.Sqlite:
