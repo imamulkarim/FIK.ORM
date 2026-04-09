@@ -15,8 +15,19 @@ namespace FIK.ORM.Infrastructures.Transactions
         private bool _isCompleted;
         private bool _isDisposed;
 
+        /// <summary>
+        /// Gets the underlying database transaction.
+        /// </summary>
         public IDbTransaction Transaction => _transaction;
+
+        /// <summary>
+        /// Gets the isolation level used by the transaction.
+        /// </summary>
         public IsolationLevel IsolationLevel { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether the transaction has completed.
+        /// </summary>
         public bool IsCompleted => _isCompleted;
 
         /// <summary>
@@ -125,8 +136,8 @@ namespace FIK.ORM.Infrastructures.Transactions
             finally
             {
                 _transaction?.Dispose();
-                _connection?.Close();
-                _connection?.Dispose();
+                //_connection?.Close();
+                //_connection?.Dispose();
                 _isDisposed = true;
             }
         }
@@ -196,8 +207,8 @@ namespace FIK.ORM.Infrastructures.Transactions
             finally
             {
                 _transaction?.Dispose();
-                _connection?.Close();
-                _connection?.Dispose();
+                //_connection?.Close();
+                //_connection?.Dispose();
                 _isDisposed = true;
             }
         }

@@ -1,7 +1,9 @@
-﻿using System;
+﻿using FIK.ORM.Infrastructures.Transactions;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 using System.Linq;
 
 namespace FIK.ORM.Infrastructures.MetaData;
@@ -11,10 +13,13 @@ internal class MetaDataProviderSQL : IMetaDataProvider
     //private static readonly Lazy<MetaDataProvider> _instance = new Lazy<MetaDataProvider>(() => new MetaDataProvider());
     private static readonly ConcurrentDictionary<string, IEnumerable<MetaDataInfo> > validTablesWithColumns = new ConcurrentDictionary<string, IEnumerable<MetaDataInfo>>();
     private readonly IDbConnection connection;
+    private readonly ITransactionManager _transactionManager;
 
     public MetaDataProviderSQL(IDbConnection connection)
     {
         this.connection = connection;
+        _transactionManager = new TransactionManager(connection);
+
     }
 
     public bool IsValidTable(string schemaName,string tableName)
@@ -40,43 +45,79 @@ internal class MetaDataProviderSQL : IMetaDataProvider
     {
         try
         {
-            var identityColumns = GetIdentityColumns(schemaName, tableName);
-            using (var command = connection.CreateCommand())
-            {
-                command.CommandText = "SELECT COLUMN_NAME,ORDINAL_POSITION,COLUMN_DEFAULT,IS_NULLABLE,DATA_TYPE,CHARACTER_MAXIMUM_LENGTH, NUMERIC_PRECISION,NUMERIC_PRECISION_RADIX,NUMERIC_SCALE " +
-                    "FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = @TableName";
-                var parameter = command.CreateParameter();
-                parameter.ParameterName = "@TableName";
-                parameter.Value = tableName;
-                command.Parameters.Add(parameter);
+            string onlyTableName = GetOnlyTableName(tableName);
 
-                var columns = new List<MetaDataInfo>();
-                using (var reader = command.ExecuteReader())
+            var identityColumns = GetIdentityColumns(schemaName, tableName);
+
+            _transactionManager.ExecuteInTransaction(scope =>
+            {
+                using (IDbCommand oCmd = connection.CreateCommand())
                 {
-                    while (reader.Read())
+                    oCmd.Transaction = scope.Transaction;
+                    oCmd.CommandText = "SELECT COLUMN_NAME,ORDINAL_POSITION,COLUMN_DEFAULT,IS_NULLABLE,DATA_TYPE,CHARACTER_MAXIMUM_LENGTH, NUMERIC_PRECISION,NUMERIC_PRECISION_RADIX,NUMERIC_SCALE " +
+                    "FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = @TableName AND TABLE_SCHEMA=@TABLE_SCHEMA ";
+                    var parameter = oCmd.CreateParameter();
+                    parameter.ParameterName = "@TableName";
+                    parameter.Value = onlyTableName;
+                    oCmd.Parameters.Add(parameter);
+
+                    parameter = oCmd.CreateParameter();
+                    parameter.ParameterName = "@TABLE_SCHEMA";
+                    parameter.Value = schemaName;
+                    oCmd.Parameters.Add(parameter);
+
+                    var columns = new List<MetaDataInfo>();
+                    using (var reader = oCmd.ExecuteReader())
                     {
-                        columns.Add(new MetaDataInfo
-                        (
-                            reader.GetString(0), //ColumnName
-                            reader.GetInt32(1),//OrdinalPosition
-                            reader.IsDBNull(2) ? null! : reader.GetString(2), //ColumnDefault 
-                            reader.GetString(3), //IsNullable
-                            reader.GetString(4), //DataType
-                            reader.IsDBNull(5) ? null : reader.GetInt32(5), //CharacterMaximumLength
-                            reader.IsDBNull(6) ? (byte?)null : reader.GetByte(6), //NumericPrecision
-                            reader.IsDBNull(7) ? null : reader.GetInt32(7), //NumericPrecisionRadix
-                            reader.IsDBNull(8) ? null : reader.GetInt32(8), //NumericScale
-                            identityColumns.Any(c=>c.Equals(reader.GetString(0), StringComparison.OrdinalIgnoreCase)) //IdentityColumn
-                        ));
+                        while (reader.Read())
+                        {
+                            columns.Add(new MetaDataInfo
+                            (
+                                GetValueOrDefault<string>(reader, "COLUMN_NAME"), //ColumnName
+                                GetValueOrDefault<int>(reader, "ORDINAL_POSITION"),//OrdinalPosition
+                                GetValueOrDefault<string>(reader, "COLUMN_DEFAULT"), //ColumnDefault 
+                                GetValueOrDefault<string>(reader, "IS_NULLABLE"), //IsNullable
+                                GetValueOrDefault<string>(reader, "DATA_TYPE"), //DataType
+                                GetValueOrDefault<int?>(reader, "CHARACTER_MAXIMUM_LENGTH"), //CharacterMaximumLength
+                                GetValueOrDefault<int?>(reader, "NUMERIC_PRECISION"), //NumericPrecision
+                                GetValueOrDefault<int?>(reader, "NUMERIC_PRECISION_RADIX"), //NumericPrecisionRadix
+                                GetValueOrDefault<int?>(reader, "NUMERIC_SCALE"), //NumericScale
+                                identityColumns.Any(c => c.Equals(reader.GetString(0), StringComparison.OrdinalIgnoreCase)) //IdentityColumn
+                            ));
+                        }
                     }
+                    scope.Commit();
+                    validTablesWithColumns.TryAdd(tableName, columns);
+
+
                 }
-                validTablesWithColumns.TryAdd(tableName, columns);
-            }
+
+                
+            });
+            
         }
         catch (Exception ex)
         {
             throw new InvalidOperationException($"Failed to retrieve metadata for table '{tableName}'.", ex);
         }
+    }
+
+    private static T GetValueOrDefault<T>(IDataReader reader, string columnName)
+    {
+        int ordinal = reader.GetOrdinal(columnName);
+
+        if (reader.IsDBNull(ordinal))
+            return default(T);
+
+        object value = reader.GetValue(ordinal);
+
+        if (value is T typedValue)
+            return typedValue;
+
+        Type targetType = Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T);
+        object converted = Convert.ChangeType(value, targetType);
+
+        return (T)converted;
     }
 
     private string[] GetIdentityColumns(string schemaName, string tableName)
@@ -85,9 +126,16 @@ internal class MetaDataProviderSQL : IMetaDataProvider
 
         try
         {
-            using (var command = connection.CreateCommand())
+            tableName = GetOnlyTableName(tableName);
+
+            _transactionManager.ExecuteInTransaction(scope =>
             {
-                command.CommandText = @"SELECT 
+                using (IDbCommand oCmd = connection.CreateCommand())
+                {
+                    oCmd.Transaction = scope.Transaction;
+                    oCmd.CommandTimeout = 0; //todo: make it configurable
+
+                    oCmd.CommandText = @"SELECT 
                                             SCHEMA_NAME(t.schema_id) AS SchemaName,
                                             t.name AS TableName,
                                             c.name AS ColumnName,
@@ -102,24 +150,29 @@ internal class MetaDataProviderSQL : IMetaDataProvider
                                             sys.identity_columns AS ic ON c.object_id = ic.object_id AND c.column_id = ic.column_id
                                         WHERE SCHEMA_NAME(t.schema_id)= @SchemaName AND t.name = @TableName
                                         ";
-                var parameter = command.CreateParameter();
-                parameter.ParameterName = "@TableName";
-                parameter.Value = tableName;
-                command.Parameters.Add(parameter);
+                    var parameter = oCmd.CreateParameter();
+                    parameter.ParameterName = "@TableName";
+                    parameter.Value = tableName;
+                    oCmd.Parameters.Add(parameter);
 
-                parameter = command.CreateParameter();
-                parameter.ParameterName = "@SchemaName";
-                parameter.Value = schemaName;
-                command.Parameters.Add(parameter);
+                    parameter = oCmd.CreateParameter();
+                    parameter.ParameterName = "@SchemaName";
+                    parameter.Value = schemaName;
+                    oCmd.Parameters.Add(parameter);
 
-                using (var reader = command.ExecuteReader())
-                {
-                    while (reader.Read())
+                    using (var reader = oCmd.ExecuteReader())
                     {
-                        columns.Add(reader.GetString(2));
+                        while (reader.Read())
+                        {
+                            columns.Add(reader.GetString(2));
+                        }
                     }
+                    scope.Commit();
+
                 }
-            }
+            });
+
+            
         }
         catch (Exception ex)
         {
@@ -127,5 +180,14 @@ internal class MetaDataProviderSQL : IMetaDataProvider
         }
 
         return columns.ToArray();
+    }
+
+    private string GetOnlyTableName(string fullTableName)
+    {
+        if (fullTableName.Contains("."))
+        {
+            return fullTableName.Split('.').Last();
+        }
+        return fullTableName;
     }
 }

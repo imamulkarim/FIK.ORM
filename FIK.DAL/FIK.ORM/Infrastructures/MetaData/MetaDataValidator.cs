@@ -18,7 +18,7 @@ namespace FIK.ORM.Infrastructures.MetaData
 
         public void ValidateTableName(string tableName, string schemaName = "dbo")
         {
-            if (metaDataProvider!.IsValidTable(schemaName, tableName))
+            if (!metaDataProvider!.IsValidTable(schemaName, tableName))
             {
                 throw new ArgumentException($"The table name '{tableName}' is not valid.");
             }
@@ -31,9 +31,12 @@ namespace FIK.ORM.Infrastructures.MetaData
                 return;
             }
 
+            Dictionary<string, string> columnWithModifier = ExtractColumnModifier(columns);
+
+
             metaDataProvider!.GetTableMetaData(schemaName, tableName, out IEnumerable<MetaDataInfo> validColumns);
 
-            foreach (var column in columns)
+            foreach (var column in columnWithModifier == null ? columns : columnWithModifier.Select(m => m.Key).ToArray()!)
             {
                 if (!validColumns.Any(c => c.ColumnName.Equals(column, StringComparison.OrdinalIgnoreCase)))
                 {
@@ -108,10 +111,10 @@ namespace FIK.ORM.Infrastructures.MetaData
             Dictionary<string, string> columnWithModifier = ExtractColumnModifier(columns);
 
             metaDataProvider!.GetTableMetaData(schemaName, tableName, out IEnumerable<MetaDataInfo> dbColumns);
-            var validColumns = columnWithModifier?.Select(m => m.Key).ToArray().Where(column =>
-                !dbColumns.Any(c => c.ColumnName.Equals(column, StringComparison.OrdinalIgnoreCase))
+            var validColumns = (columnWithModifier == null ? columns : columnWithModifier.Select(m => m.Key).ToArray())?.Where(column =>
+                dbColumns.Any(c => c.ColumnName.Equals(column, StringComparison.OrdinalIgnoreCase) && c.IdentityColumn == false)
             ).ToList();
-            validColumns = validColumns ?? dbColumns.Select(c => c.ColumnName).ToList();
+            validColumns = validColumns ?? dbColumns.Where(c=> c.IdentityColumn ==false).Select(c => c.ColumnName).ToList();
 
 
             var setClause = "";
@@ -132,12 +135,10 @@ namespace FIK.ORM.Infrastructures.MetaData
             Dictionary<string, string> columnWithModifier = new Dictionary<string, string>();
             foreach (var column in columns)
             {
-                if (column.Contains("+") || column.Contains("-")) 
-                    columnWithModifier.Add(column.Substring(1, column.Length-2 ) , column.Substring(0, 1));
-                else
-                    columnWithModifier.Add(column, "");
+                if (column.Contains("+") || column.Contains("-") || column.Contains("*") || column.Contains("/")) 
+                    columnWithModifier.Add(column.Substring(1, column.Length-1 ) , column.Substring(0, 1));
             }
-            return columnWithModifier;
+            return columnWithModifier.Count() == 0 ? null! : columnWithModifier;
         }
 
         private Dictionary<string, string> BuildOrderByClause(Dictionary<string, string>? orderByColumns)

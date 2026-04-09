@@ -25,11 +25,6 @@ namespace FIK.ORM.Infrastructures.Transactions
         /// <returns>A new transaction scope</returns>
         ITransactionScope BeginTransaction(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted);
 
-        /// <summary>
-        /// Creates a new transaction scope asynchronously
-        /// </summary>
-        /// <param name="isolationLevel">The isolation level for the transaction</param>
-        /// <returns>A task that returns a new transaction scope</returns>
         //Task<ITransactionScope> BeginTransactionAsync(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted);
 
         /// <summary>
@@ -41,12 +36,6 @@ namespace FIK.ORM.Infrastructures.Transactions
         /// <returns>The result of the operation</returns>
         TResult ExecuteInTransaction<TResult>(Func<ITransactionScope, TResult> operation);
 
-        /// <summary>
-        /// Executes a callback function within a transaction scope asynchronously
-        /// </summary>
-        /// <typeparam name="TResult">The return type of the operation</typeparam>
-        /// <param name="operation">The async operation to execute</param>
-        /// <returns>A task that returns the result of the operation</returns>
         //Task<TResult> ExecuteInTransactionAsync<TResult>(Func<ITransactionScope, Task<TResult>> operation);
 
         /// <summary>
@@ -55,12 +44,21 @@ namespace FIK.ORM.Infrastructures.Transactions
         /// <param name="operation">The operation to execute</param>
         void ExecuteInTransaction(Action<ITransactionScope> operation);
 
-        /// <summary>
-        /// Executes a callback function within a transaction scope asynchronously (no return value)
-        /// </summary>
-        /// <param name="operation">The async operation to execute</param>
         //Task ExecuteInTransactionAsync(Func<ITransactionScope, Task> operation);
 
-        IEnumerable<T> ExecuteInTransaction<T>(IDbConnection iDbConnection, IDbCommand oCmd, MetaDataInfo[] metaDatas) where T : class, new();
+        /// <summary>
+        /// Executes the specified command within a transaction and maps the result set to objects.
+        /// </summary>
+        /// <typeparam name="T">The target model type.</typeparam>
+        /// <param name="dbCommand">The command to execute.</param>
+        /// <param name="metaDatas">The metadata describing the columns to map.</param>
+        /// <returns>An enumerable sequence of mapped objects.</returns>
+        IEnumerable<T> ExecuteInTransaction<T>(IDbCommand dbCommand, MetaDataInfo[] metaDatas) where T : class, new();
+
+        /// <summary>
+        /// Commits the current transaction.
+        /// </summary>
+        void Commit();
+
     }
 }

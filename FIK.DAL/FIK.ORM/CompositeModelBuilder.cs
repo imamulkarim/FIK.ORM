@@ -5,6 +5,9 @@ using System.Collections.Generic;
 
 namespace FIK.ORM
 {
+    /// <summary>
+    /// Builds a batch of insert, update, delete, and custom operations that can be executed together.
+    /// </summary>
     public class CompositeModelBuilder
     {
         List<CompositeModel> list = new List<CompositeModel>();
@@ -111,16 +114,16 @@ namespace FIK.ORM
         /// <typeparam name="T"> Class Name </typeparam>
         /// <param name="model"> List or Single Object which need to perform operation </param>
         /// <param name="insertColumns">Optional Parameter , specify the columns to be insert </param>
-        /// <param name="whereColumns"> Optional Parameter,when need only some specific property to insert sample ( Id,Name,Amount, +Qty ) , for update if existing data need to increment or decrement then use + or - </param>
         /// <param name="updateColumns"> Optional Parameter,when need only some specific property to update sample ( Id,Name,Amount, +Qty ) , for update if existing data need to increment or decrement then use + or - </param>
+        /// <param name="whereColumns"> Optional Parameter,when need only some specific property to insert sample ( Id,Name,Amount, +Qty ) , for update if existing data need to increment or decrement then use + or - </param>
         /// <param name="tableName"> Optional Parameter, specify the tableName name when it defers from model name</param>
         /// <param name="schemaName"> Optional Parameter, specify the schema name </param>
         /// <returns> true or false </returns>
         /// </summary>
         public bool AddInsertOrUpdateRecordSet<T>(object model,
                                     string[]? insertColumns,
-                                    string[]? whereColumns,
                                     string[]? updateColumns,
+                                    string[]? whereColumns,
                                     string tableName = "",
                                     string schemaName = "dbo")
         {
@@ -270,13 +273,21 @@ namespace FIK.ORM
             }
         }
 
+        /// <summary>
+        /// Adds a raw SQL statement to the composite execution batch.
+        /// </summary>
+        /// <param name="query">The SQL statement to execute.</param>
+        /// <returns><see langword="true"/> when the query is added to the batch.</returns>
         public bool AddRecordSetRawQuery(string query)
         {
             list.Add(new CompositeModel { RawQuery = query , OperationMode= OperationMode.Custom });
             return true;
         }
 
-
+        /// <summary>
+        /// Returns the queued record set definitions that will be executed as a composite batch.
+        /// </summary>
+        /// <returns>The list of queued <see cref="CompositeModel"/> items.</returns>
         public List<CompositeModel> GetRecordSet()
         {
             return list;

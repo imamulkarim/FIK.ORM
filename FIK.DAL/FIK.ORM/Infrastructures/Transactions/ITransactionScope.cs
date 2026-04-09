@@ -45,14 +45,8 @@ namespace FIK.ORM.Infrastructures.Transactions
         /// </summary>
         void Rollback();
 
-        /// <summary>
-        /// Creates a savepoint within the transaction
-        /// </summary>
         //void CreateSavepoint(string savepointName);
 
-        /// <summary>
-        /// Rolls back to a specific savepoint
-        /// </summary>
         //void RollbackToSavepoint(string savepointName);
 
         /// <summary>

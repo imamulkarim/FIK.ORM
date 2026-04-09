@@ -5,6 +5,9 @@ using System.Collections.Generic;
 
 namespace FIK.ORM.Models
 {
+    /// <summary>
+    /// Represents a single operation entry inside a composite execution batch.
+    /// </summary>
     public class CompositeModel
     {
         internal List<object> Model { get; set; }
