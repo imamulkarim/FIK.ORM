@@ -1,9 +1,9 @@
-﻿using FIK.ORM.Infrastructures.Transactions;
+﻿using FIK.ORM.Extensions;
+using FIK.ORM.Infrastructures.Transactions;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.Common;
 using System.Linq;
 
 namespace FIK.ORM.Infrastructures.MetaData;
@@ -45,7 +45,7 @@ internal class MetaDataProviderSQL : IMetaDataProvider
     {
         try
         {
-            string onlyTableName = GetOnlyTableName(tableName);
+            string onlyTableName = tableName.GetOnlyTableName();
 
             var identityColumns = GetIdentityColumns(schemaName, tableName);
 
@@ -73,15 +73,15 @@ internal class MetaDataProviderSQL : IMetaDataProvider
                         {
                             columns.Add(new MetaDataInfo
                             (
-                                GetValueOrDefault<string>(reader, "COLUMN_NAME"), //ColumnName
-                                GetValueOrDefault<int>(reader, "ORDINAL_POSITION"),//OrdinalPosition
-                                GetValueOrDefault<string>(reader, "COLUMN_DEFAULT"), //ColumnDefault 
-                                GetValueOrDefault<string>(reader, "IS_NULLABLE"), //IsNullable
-                                GetValueOrDefault<string>(reader, "DATA_TYPE"), //DataType
-                                GetValueOrDefault<int?>(reader, "CHARACTER_MAXIMUM_LENGTH"), //CharacterMaximumLength
-                                GetValueOrDefault<int?>(reader, "NUMERIC_PRECISION"), //NumericPrecision
-                                GetValueOrDefault<int?>(reader, "NUMERIC_PRECISION_RADIX"), //NumericPrecisionRadix
-                                GetValueOrDefault<int?>(reader, "NUMERIC_SCALE"), //NumericScale
+                                reader.GetValueOrDefault<string>("COLUMN_NAME"), //ColumnName
+                                reader.GetValueOrDefault<int>("ORDINAL_POSITION"),//OrdinalPosition
+                                reader.GetValueOrDefault<string>("COLUMN_DEFAULT"), //ColumnDefault 
+                                reader.GetValueOrDefault<string>("IS_NULLABLE"), //IsNullable
+                                reader.GetValueOrDefault<string>("DATA_TYPE"), //DataType
+                                reader.GetValueOrDefault<int?>("CHARACTER_MAXIMUM_LENGTH"), //CharacterMaximumLength
+                                reader.GetValueOrDefault<int?>("NUMERIC_PRECISION"), //NumericPrecision
+                                reader.GetValueOrDefault<int?>("NUMERIC_PRECISION_RADIX"), //NumericPrecisionRadix
+                                reader.GetValueOrDefault<int?>("NUMERIC_SCALE"), //NumericScale
                                 identityColumns.Any(c => c.Equals(reader.GetString(0), StringComparison.OrdinalIgnoreCase)) //IdentityColumn
                             ));
                         }
@@ -102,31 +102,13 @@ internal class MetaDataProviderSQL : IMetaDataProvider
         }
     }
 
-    private static T GetValueOrDefault<T>(IDataReader reader, string columnName)
-    {
-        int ordinal = reader.GetOrdinal(columnName);
-
-        if (reader.IsDBNull(ordinal))
-            return default(T);
-
-        object value = reader.GetValue(ordinal);
-
-        if (value is T typedValue)
-            return typedValue;
-
-        Type targetType = Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T);
-        object converted = Convert.ChangeType(value, targetType);
-
-        return (T)converted;
-    }
-
     private string[] GetIdentityColumns(string schemaName, string tableName)
     {
         var columns = new List<string>();
 
         try
         {
-            tableName = GetOnlyTableName(tableName);
+            tableName = tableName.GetOnlyTableName();
 
             _transactionManager.ExecuteInTransaction(scope =>
             {
@@ -182,12 +164,5 @@ internal class MetaDataProviderSQL : IMetaDataProvider
         return columns.ToArray();
     }
 
-    private string GetOnlyTableName(string fullTableName)
-    {
-        if (fullTableName.Contains("."))
-        {
-            return fullTableName.Split('.').Last();
-        }
-        return fullTableName;
-    }
+   
 }

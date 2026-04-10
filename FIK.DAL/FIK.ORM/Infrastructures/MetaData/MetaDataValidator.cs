@@ -63,10 +63,14 @@ namespace FIK.ORM.Infrastructures.MetaData
             return validColumns.ToArray();
         }
 
-        public string GetTableName(Type entityType, string? tableName, string schemaName = "dbo") =>
-           $"{schemaName}." + (string.IsNullOrEmpty(tableName) == true ? entityType.Name : tableName!);
+        public string GetTableName(Type entityType, string? tableName, string schemaName = "dbo")
+        {
+            if(string.IsNullOrEmpty(schemaName))
+                return string.IsNullOrEmpty(tableName) == true ? entityType.Name : tableName!;
+            else return $"{schemaName}." + (string.IsNullOrEmpty(tableName) == true ? entityType.Name : tableName!);
+        }
 
-        internal string BuildWhereClause(string tableName, string[] columns)
+        internal virtual string BuildWhereClause(string tableName, string[] columns)
         {
             if (columns == null || !columns.Any())
             {
@@ -76,12 +80,25 @@ namespace FIK.ORM.Infrastructures.MetaData
             return " Where " + string.Join(" AND ", whereConditions);
         }
 
-        internal string GetInsertColumns(string schemaName, string tableName, IEnumerable<string>? columns)
+        internal virtual string GetInsertColumns(string schemaName, string tableName, IEnumerable<string>? columns, bool withIdentityColumn = false)
         {
             metaDataProvider!.GetTableMetaData(schemaName, tableName, out IEnumerable<MetaDataInfo> dbColumns);
 
+            if (withIdentityColumn)
+            {
+                var validCoumns = columns?.Where(column =>
+                !dbColumns.Any(c => c.ColumnName.Equals(column, StringComparison.OrdinalIgnoreCase))
+                ).ToList();
+
+                validCoumns = validCoumns ?? dbColumns.Select(c => c.ColumnName).ToList();
+
+                var columnListWithIdenty = string.Join(", ", validCoumns);
+                var parameterListWithIdentity = string.Join(", ", validCoumns.Select(c => "@" + c));
+                return $"({columnListWithIdenty}) VALUES ({parameterListWithIdentity})";
+            }
+
             var nonIdentityColumns = columns?.Where(column =>
-                !dbColumns.Any(c => c.ColumnName.Equals(column, StringComparison.OrdinalIgnoreCase) && c.IdentityColumn == true)
+                !dbColumns.Any(c => c.ColumnName.Equals(column, StringComparison.OrdinalIgnoreCase) && c.IdentityColumn == true  )
             ).ToList();
 
             nonIdentityColumns = nonIdentityColumns ?? dbColumns.Where(c => c.IdentityColumn == false).Select(c => c.ColumnName).ToList();
@@ -91,7 +108,7 @@ namespace FIK.ORM.Infrastructures.MetaData
             return $"({columnList}) VALUES ({parameterList})";
         }
 
-        internal string GetSelectColumns(string schemaName, string tableName, IEnumerable<string>? columns)
+        internal virtual string GetSelectColumns(string schemaName, string tableName, IEnumerable<string>? columns)
         {
             metaDataProvider!.GetTableMetaData(schemaName, tableName, out IEnumerable<MetaDataInfo> dbColumns);
 
@@ -106,7 +123,7 @@ namespace FIK.ORM.Infrastructures.MetaData
             return columnList;
         }
 
-        internal string BuildUpdateSetClause(string schemaName, string tableName, IEnumerable<string>? columns)
+        internal virtual string BuildUpdateSetClause(string schemaName, string tableName, IEnumerable<string>? columns)
         {
             Dictionary<string, string> columnWithModifier = ExtractColumnModifier(columns);
 

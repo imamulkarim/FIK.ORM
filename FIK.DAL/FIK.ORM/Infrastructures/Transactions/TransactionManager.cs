@@ -170,14 +170,14 @@ namespace FIK.ORM.Infrastructures.Transactions
         public IEnumerable<T> ExecuteInTransaction<T>(IDbCommand dbCommand, MetaDataInfo[] metaDatas) where T : class, new()
         {
             PropertyDescriptorCollection props = TypeDescriptor.GetProperties(typeof(T));
-
             var scope = BeginTransaction();
+            var results = new List<T>();
 
-            
+            try
+            {
                 dbCommand.Transaction = scope.Transaction;
-            using (IDataReader reader = dbCommand.ExecuteReader())
+                using (IDataReader reader = dbCommand.ExecuteReader())
                 {
-                    //List<T> results = new List<T>();
                     while (reader.Read())
                     {
                         T obj = new T();
@@ -190,11 +190,21 @@ namespace FIK.ORM.Infrastructures.Transactions
                                 prop.SetValue(obj, value);
                             }
                         }
-                        yield return obj;
+                        results.Add(obj);
                     }
                 }
-            scope.Commit();
+                scope.Commit();
+            }
+            catch
+            {
+                scope.Rollback();
+                throw;
+            }
+
+            return results;
         }
+
+       
 
         //todo: Future enhancement - support savepoints if the underlying provider supports it
         //public async Task ExecuteInTransactionAsync(Func<ITransactionScope, Task> operation)

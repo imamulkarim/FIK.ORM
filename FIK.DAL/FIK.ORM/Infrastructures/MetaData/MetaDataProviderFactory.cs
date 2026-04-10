@@ -24,9 +24,7 @@ namespace FIK.ORM.Infrastructures.MetaData
 #endif
                     break;
                 case DatabaseProvider.Sqlite:
-#if NETSTANDARD2_0                  
                     metaDataProvider = new MetaDataProviderSQLite(dbConnection);
-#endif
                     break;
                 case DatabaseProvider.PostgreSQL:
                     // Register SQL Server specific factories

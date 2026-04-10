@@ -29,6 +29,21 @@ public static class TestSettings
         }
     }
 
+    public static string ConnectionStringSqlite
+    {
+        get
+        {
+
+            var connectionString = _configuration.GetConnectionString("TestDatabaseSqLite");
+            if (string.IsNullOrWhiteSpace(connectionString))
+            {
+                throw new InvalidOperationException("Missing 'TestDatabase' connection string in appsettings.json.");
+            }
+
+            return connectionString;
+        }
+    }
+
     public static string DatabaseProvider
     {
         get

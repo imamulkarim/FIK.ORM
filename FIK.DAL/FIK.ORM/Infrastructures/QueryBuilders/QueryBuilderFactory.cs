@@ -21,9 +21,7 @@ namespace FIK.ORM.Infrastructures.QueryBuilders
 #endif
                     break;
                 case DatabaseProvider.Sqlite:
-#if NETSTANDARD2_0                  
-                    queryBuilder = new SQLQueryBuilder(metaDataProvider); //todo: implement SQLiteQueryBuilder
-#endif
+                    queryBuilder = new SqLiteQueryBuilder(metaDataProvider); //todo: implement SQLiteQueryBuilder
                     break;
                 case DatabaseProvider.PostgreSQL:
                     // Register SQL Server specific factories

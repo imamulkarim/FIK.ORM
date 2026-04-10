@@ -9,7 +9,7 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 CREATE TABLE [dbo].[Item](
-	[Id] [INT] NOT NULL,
+	[Id] [bigint] NOT NULL,
 	[Name] [NVARCHAR](50) NULL,
 	[Price] [DECIMAL](18, 4) NULL,
  CONSTRAINT [PK_Item] PRIMARY KEY CLUSTERED 
@@ -23,8 +23,8 @@ GO
 /****** Object:  Table [dbo].[Sale]    Script Date: 4/7/2026 4:49:47 PM ******/
 
 CREATE TABLE [dbo].[Sale](
-	[Id] [INT] NOT NULL,
-	[ItemId] [INT] NULL,
+	[Id] [bigint] NOT NULL,
+	[ItemId] [bigint] NULL,
 	[Quantity] [DECIMAL](18, 4) NULL,
 	[TotalPrice] [DECIMAL](18, 4) NULL,
  CONSTRAINT [PK_Sale] PRIMARY KEY CLUSTERED 
@@ -49,8 +49,8 @@ GO
 
 
 CREATE TABLE [dboInvn].[Inventory](
-	[Id] [INT] IDENTITY(1,1) NOT NULL,
-	[ItemId] [INT] NULL,
+	[Id] [bigint] IDENTITY(1,1) NOT NULL,
+	[ItemId] [bigint] NULL,
 	[Quantity] [DECIMAL](18, 4) NULL,
  CONSTRAINT [PK_Inventory] PRIMARY KEY CLUSTERED 
 (

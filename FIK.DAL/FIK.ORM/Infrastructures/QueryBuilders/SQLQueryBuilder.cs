@@ -33,7 +33,7 @@ internal class SQLQueryBuilder : MetaDataValidator, IQueryBuilder
     }
 
  
-    public string BuildInsertQuery(Type entityType, IEnumerable<string>? columns, string tableName = "", string schemaName = "dbo")
+    public string BuildInsertQuery(Type entityType, IEnumerable<string>? columns, string tableName = "", string schemaName = "dbo", bool withIdentityColumn = false)
     {
         ValidateTableName(GetTableName(entityType, tableName, schemaName), schemaName);
         ValidateColumns(GetTableName(entityType, tableName, schemaName), columns!,schemaName);

@@ -1,12 +1,18 @@
-using FIK.ORM.Tests.Share.Models;
+﻿using FIK.ORM.Tests.Share.Models;
+using NUnit.Framework;
+using System.Collections.Generic;
+using System.Linq;
 
-namespace FIK.ORM.Tests.Net8
+
+namespace FIK.ORM.Tests.Net40
 {
-    public class QueryExecutorClientTest
+    [TestFixture]
+    public class SqlQueryExecutorClientTest
     {
-        [Fact]
+        [Test]
         public void ShouldInsertSingleRecordInDefaultSchema_WhenNoSchemaProvided()
         {
+
             var queryExecutorClient = new QueryExecutorClient(TestSettings.ConnectionString, Enums.DatabaseProvider.SqlServer);
             Items itemsTestData = new Items { Id = 1, Name = "Test", Price = 10.5m };
 
@@ -21,12 +27,12 @@ namespace FIK.ORM.Tests.Net8
                 var actualItem = queryExecutorClient.Select<Items>(typeof(Items), null, whereColumns, null, null, "Item").SingleOrDefault();
 
                 //Assert
-                Assert.NotNull(actualItem);
-                Assert.Equal(itemsTestData.Id, actualItem.Id);
-                Assert.Equal(itemsTestData.Name, actualItem.Name);
-                Assert.Equal(itemsTestData.Price, actualItem.Price);
+                Assert.That(actualItem, Is.Not.Null);
+                Assert.That(actualItem.Id, Is.EqualTo(itemsTestData.Id));
+                Assert.That(actualItem.Name, Is.EqualTo(itemsTestData.Name));
+                Assert.That(actualItem.Price, Is.EqualTo(itemsTestData.Price));
             }
-            catch (Exception)
+            catch (System.Exception)
             {
                 throw;
             }
@@ -37,9 +43,10 @@ namespace FIK.ORM.Tests.Net8
             }
         }
 
-        [Fact]
+        [Test]
         public void ShouldInsertSingleRecordInSchema_WhenNoTableNameProvidedAndSchemaProvided()
         {
+
             var queryExecutorClient = new QueryExecutorClient(TestSettings.ConnectionString, Enums.DatabaseProvider.SqlServer);
             Items itemsTestData = new Items { Id = 2, Name = "Test", Price = 10.5m };
             Inventory inventoryTestData = new Inventory { Id = 2, ItemId = itemsTestData.Id, Quantity = 110.5m };
@@ -57,11 +64,11 @@ namespace FIK.ORM.Tests.Net8
                 var actualIvnItem = queryExecutorClient.Select<Inventory>(typeof(Inventory), null, whereColumns, null, null, null, "dboInvn").SingleOrDefault();
 
                 //Assert
-                Assert.NotNull(actualIvnItem);
-                Assert.Equal(inventoryTestData.ItemId, actualIvnItem.ItemId);
-                Assert.Equal(inventoryTestData.Quantity, actualIvnItem.Quantity);
+                Assert.That(actualIvnItem, Is.Not.Null);
+                Assert.That(actualIvnItem.ItemId, Is.EqualTo(inventoryTestData.ItemId));
+                Assert.That(actualIvnItem.Quantity, Is.EqualTo(inventoryTestData.Quantity));
             }
-            catch (Exception)
+            catch (System.Exception)
             {
                 throw;
             }
@@ -73,17 +80,18 @@ namespace FIK.ORM.Tests.Net8
             }
         }
 
-        [Fact]
+        [Test]
         public void ShouldInsertMultipleRecordInSchema_WhenNoTableNameProvidedAndSchemaProvided()
         {
+
             var queryExecutorClient = new QueryExecutorClient(TestSettings.ConnectionString, Enums.DatabaseProvider.SqlServer);
             List<Items> itemsTestData = new List<Items>();
             itemsTestData.Add(new Items { Id = 3, Name = "Test", Price = 10.5m });
             itemsTestData.Add(new Items { Id = 4, Name = "Test 2", Price = 8.50m });
 
             List<Inventory> inventoryTestData = new List<Inventory>();
-            inventoryTestData.Add(new Inventory { ItemId = itemsTestData[0].Id, Quantity = 110.5m });
-            inventoryTestData.Add(new Inventory { ItemId = itemsTestData[1].Id, Quantity = 11 });
+            inventoryTestData.Add(new Inventory {  ItemId = itemsTestData[0].Id, Quantity = 110.5m });
+            inventoryTestData.Add(new Inventory {  ItemId = itemsTestData[1].Id, Quantity = 11 });
 
             try
             {
@@ -100,10 +108,11 @@ namespace FIK.ORM.Tests.Net8
                 var actualIvnItem = queryExecutorClient.Select<Inventory>(typeof(Inventory), null, whereClauseInvn, null, null, null, "dboInvn").Count();
 
                 //Assert
-                Assert.Equal(2, actualIvnItem);
-                Assert.Equal(2, actualItem);
+                Assert.That(actualIvnItem, Is.EqualTo(2));
+                Assert.That(actualItem, Is.EqualTo(2));
+
             }
-            catch (Exception)
+            catch (System.Exception)
             {
                 throw;
             }
@@ -115,9 +124,10 @@ namespace FIK.ORM.Tests.Net8
             }
         }
 
-        [Fact]
+        [Test]
         public void ShouldUpdateSingleRecordInDefaultSchema_WhenNoSchemaProvided()
         {
+
             var queryExecutorClient = new QueryExecutorClient(TestSettings.ConnectionString, Enums.DatabaseProvider.SqlServer);
             Items itemsTestData = new Items { Id = 5, Name = "Test", Price = 10.5m };
 
@@ -136,12 +146,12 @@ namespace FIK.ORM.Tests.Net8
                 var actualItem = queryExecutorClient.Select<Items>(typeof(Items), null, whereColumns, null, null, "Item").SingleOrDefault();
 
                 //Assert
-                Assert.NotNull(actualItem);
-                Assert.Equal(itemsTestData.Id, actualItem.Id);
-                Assert.Equal(itemsTestData.Name, actualItem.Name);
-                Assert.Equal(itemsTestData.Price, actualItem.Price);
+                Assert.That(actualItem, Is.Not.Null);
+                Assert.That(actualItem.Id, Is.EqualTo(itemsTestData.Id));
+                Assert.That(actualItem.Name, Is.EqualTo(itemsTestData.Name));
+                Assert.That(actualItem.Price, Is.EqualTo(itemsTestData.Price));
             }
-            catch (Exception)
+            catch (System.Exception)
             {
                 throw;
             }
@@ -152,9 +162,10 @@ namespace FIK.ORM.Tests.Net8
             }
         }
 
-        [Fact]
+        [Test]
         public void ShouldUpdateSingleRecordInSchema_WhenNoTableNameProvidedAndSchemaProvided()
         {
+
             var queryExecutorClient = new QueryExecutorClient(TestSettings.ConnectionString, Enums.DatabaseProvider.SqlServer);
             Items itemsTestData = new Items { Id = 6, Name = "Test", Price = 10.5m };
             Inventory inventoryTestData = new Inventory { Id = 6, ItemId = itemsTestData.Id, Quantity = 110.5m };
@@ -169,6 +180,7 @@ namespace FIK.ORM.Tests.Net8
                 queryExecutorClient.Insert<Inventory>(inventoryTestData, null, null, "dboInvn");
                 queryExecutorClient.CommitTransaction();
 
+
                 var actualIvnItem = queryExecutorClient.Select<Inventory>(typeof(Inventory), null, whereColumns, null, null, null, "dboInvn").SingleOrDefault();
                 inventoryTestData.Id = actualIvnItem.Id;
                 inventoryTestData.Quantity = 120.5m;
@@ -178,11 +190,11 @@ namespace FIK.ORM.Tests.Net8
                 actualIvnItem = queryExecutorClient.Select<Inventory>(typeof(Inventory), null, whereColumns, null, null, null, "dboInvn").SingleOrDefault();
 
                 //Assert
-                Assert.NotNull(actualIvnItem);
-                Assert.Equal(inventoryTestData.ItemId, actualIvnItem.ItemId);
-                Assert.Equal(inventoryTestData.Quantity, actualIvnItem.Quantity);
+                Assert.That(actualIvnItem, Is.Not.Null);
+                Assert.That(actualIvnItem.ItemId, Is.EqualTo(inventoryTestData.ItemId));
+                Assert.That(actualIvnItem.Quantity, Is.EqualTo(inventoryTestData.Quantity));
             }
-            catch (Exception)
+            catch (System.Exception)
             {
                 throw;
             }
@@ -191,12 +203,14 @@ namespace FIK.ORM.Tests.Net8
                 queryExecutorClient.Delete<Inventory>(inventoryTestData, new string[] { "ItemId" }, null, "dboInvn");
                 queryExecutorClient.Delete<Items>(itemsTestData, new string[] { "Id" }, "Item");
                 queryExecutorClient.CommitTransaction();
+
             }
         }
 
-        [Fact]
+        [Test]
         public void ShouldUpdateMultipleRecordInSchema_WhenNoTableNameProvidedAndSchemaProvided()
         {
+
             var queryExecutorClient = new QueryExecutorClient(TestSettings.ConnectionString, Enums.DatabaseProvider.SqlServer);
             List<Items> itemsTestData = new List<Items>();
             itemsTestData.Add(new Items { Id = 7, Name = "Test", Price = 10.5m });
@@ -211,7 +225,7 @@ namespace FIK.ORM.Tests.Net8
                 //Arrange
                 var whereClauseItem = $" Where Id IN (7,8) ";
                 var whereClauseInvn = $" Where ItemId IN (7,8) ";
-
+                
                 queryExecutorClient.InsertBatch<Items>(itemsTestData, null, "Item", "dbo");
                 queryExecutorClient.InsertBatch<Inventory>(inventoryTestData, null, null, "dboInvn");
                 queryExecutorClient.CommitTransaction();
@@ -228,18 +242,20 @@ namespace FIK.ORM.Tests.Net8
                 queryExecutorClient.UpdateBatch<Inventory>(inventoryTestData, null, new string[] { "Id" }, null, "dboInvn");
                 queryExecutorClient.CommitTransaction();
 
+
                 //Assert
                 actualIvnItem = queryExecutorClient.Select<Inventory>(typeof(Inventory), null, whereClauseInvn, null, null, null, "dboInvn");
-                Assert.Equal(2, actualIvnItem.Count());
+                Assert.That(actualIvnItem.Count(), Is.EqualTo(2));
 
                 foreach (var item in actualIvnItem)
                 {
                     var inventoryTestDataItem = inventoryTestData.Find(m => m.Id == item.Id);
-                    Assert.Equal(inventoryTestDataItem.Quantity, item.Quantity);
-                    Assert.Equal(inventoryTestDataItem.ItemId, item.ItemId);
+                    Assert.That(item.Quantity, Is.EqualTo(inventoryTestDataItem.Quantity));
+                    Assert.That(item.ItemId, Is.EqualTo(inventoryTestDataItem.ItemId));
                 }
+
             }
-            catch (Exception)
+            catch (System.Exception)
             {
                 throw;
             }
@@ -251,15 +267,17 @@ namespace FIK.ORM.Tests.Net8
             }
         }
 
-        [Fact]
+        [Test]
         public void ShouldInsertOrUpdateRecordInSchema_WhenNoTableNameProvidedAndSchemaProvided()
         {
+
             var queryExecutorClient = new QueryExecutorClient(TestSettings.ConnectionString, Enums.DatabaseProvider.SqlServer);
             List<Items> itemsTestData = new List<Items>();
             itemsTestData.Add(new Items { Id = 9, Name = "Test", Price = 10.5m });
             itemsTestData.Add(new Items { Id = 10, Name = "Test 2", Price = 8.50m });
 
             Inventory inventoryTestData = new Inventory { ItemId = itemsTestData[0].Id, Quantity = 110.5m };
+            
 
             try
             {
@@ -268,23 +286,27 @@ namespace FIK.ORM.Tests.Net8
                 var whereClauseInvn = $" Where ItemId =9 ";
 
                 queryExecutorClient.InsertBatch<Items>(itemsTestData, null, "Item", "dbo");
-                queryExecutorClient.InsertOrUpdate<Inventory>(inventoryTestData, null, new string[] { "Quantity" }, new string[] { "ItemId" }, null, "dboInvn");
+                queryExecutorClient.InsertOrUpdate<Inventory>(inventoryTestData, null, new string[] { "Quantity" }, new string[] { "ItemId" },null, "dboInvn");
                 queryExecutorClient.CommitTransaction();
 
+
                 //Act
+                // this will increase the Quantity of existing record by 5 as we have provided Quantity in updateColumn and Id in whereColumn and Id is already exist in database. If we provide any column other than Quantity in updateColumn then it will update the record with provided value instead of increasing it.
                 inventoryTestData.Quantity = 5;
                 queryExecutorClient.InsertOrUpdate<Inventory>(inventoryTestData, null, new string[] { "+Quantity" }, new string[] { "ItemId" }, null, "dboInvn");
                 queryExecutorClient.CommitTransaction();
+
 
                 //Assert
                 var actualIvnItem = queryExecutorClient.Select<Inventory>(typeof(Inventory), null, whereClauseInvn, null, null, null, "dboInvn").SingleOrDefault();
                 var actualItemCount = queryExecutorClient.Select<Items>(typeof(Items), null, whereClauseItem, null, null, "Item").Count();
 
-                Assert.Equal(inventoryTestData.Quantity + 110.5m, actualIvnItem.Quantity);
-                Assert.Equal(inventoryTestData.ItemId, actualIvnItem.ItemId);
-                Assert.Equal(2, actualItemCount);
+                Assert.That(actualIvnItem.Quantity, Is.EqualTo(inventoryTestData.Quantity+110.5m));
+                Assert.That(actualIvnItem.ItemId, Is.EqualTo(inventoryTestData.ItemId));
+                Assert.That(actualItemCount, Is.EqualTo(2));
+
             }
-            catch (Exception)
+            catch (System.Exception)
             {
                 throw;
             }
@@ -296,9 +318,10 @@ namespace FIK.ORM.Tests.Net8
             }
         }
 
-        [Fact]
+        [Test]
         public void ShouldSelectDataTable_WhenNoTableNameProvidedAndSchemaProvided()
         {
+
             var queryExecutorClient = new QueryExecutorClient(TestSettings.ConnectionString, Enums.DatabaseProvider.SqlServer);
             Items itemsTestData = new Items { Id = 22, Name = "Test", Price = 10.5m };
             Inventory inventoryTestData = new Inventory { Id = 22, ItemId = itemsTestData.Id, Quantity = 110.5m };
@@ -318,12 +341,12 @@ namespace FIK.ORM.Tests.Net8
                 var actualIvnDataTable2 = queryExecutorClient.Select(typeof(Inventory), null, " WHERE ItemId=22", null, null, null, "dboInvn");
 
                 //Assert
-                Assert.NotNull(actualIvnDataTable);
-                Assert.NotNull(actualIvnDataTable2);
-                Assert.Equal(1, actualIvnDataTable.Rows.Count);
-                Assert.Equal(1, actualIvnDataTable2.Rows.Count);
+                Assert.That(actualIvnDataTable, Is.Not.Null);
+                Assert.That(actualIvnDataTable2, Is.Not.Null);
+                Assert.That(actualIvnDataTable.Rows.Count, Is.EqualTo(1));
+                Assert.That(actualIvnDataTable2.Rows.Count, Is.EqualTo(1));
             }
-            catch (Exception)
+            catch (System.Exception)
             {
                 throw;
             }
@@ -335,14 +358,18 @@ namespace FIK.ORM.Tests.Net8
             }
         }
 
-        [Fact]
+
+
+        [Test]
         public void ShouldProcessCompositeModelInSchema()
         {
-            var queryExecutorClient = new QueryExecutorClient(TestSettings.ConnectionString, Enums.DatabaseProvider.SqlServer);
 
+            var queryExecutorClient = new QueryExecutorClient(TestSettings.ConnectionString, Enums.DatabaseProvider.SqlServer);
+            
             var itemsTestData = new Items { Id = 11, Name = "Test", Price = 10.5m };
             Inventory inventoryTestData = new Inventory { ItemId = itemsTestData.Id, Quantity = 110.5m };
-            Sales saleTestData = new Sales { Id = 100, ItemId = itemsTestData.Id, Quantity = 2, TotalPrice = 2 * itemsTestData.Price };
+            Sales saleTestData = new Sales { Id=100 ,ItemId = itemsTestData.Id, Quantity = 2, TotalPrice= 2* itemsTestData.Price };
+
 
             try
             {
@@ -355,6 +382,7 @@ namespace FIK.ORM.Tests.Net8
                 queryExecutorClient.CommitTransaction();
 
                 CompositeModelBuilder compositeModelBuilder = new CompositeModelBuilder();
+                //define table name when you have different table name for same model in database
                 compositeModelBuilder.AddInsertRecordSet<Sales>(saleTestData, null, "Sale", "dbo");
                 inventoryTestData.Quantity = saleTestData.Quantity;
                 compositeModelBuilder.AddInsertOrUpdateRecordSet<Inventory>(inventoryTestData, null, new string[] { "-Quantity" }, new string[] { "ItemId" }, null, "dboInvn");
@@ -372,24 +400,32 @@ namespace FIK.ORM.Tests.Net8
                 var actualItem = queryExecutorClient.Select<Items>(typeof(Items), null, whereClauseItem, null, null, "Item").SingleOrDefault();
                 var actualSales = queryExecutorClient.Select<Sales>(typeof(Sales), null, whereClauseInvn, null, null, "Sale").SingleOrDefault();
 
-                Assert.NotNull(actualItem);
-                Assert.NotNull(actualIvnItem);
-                Assert.NotNull(actualSales);
-                Assert.Equal(16m, actualItem.Price);
-                Assert.Equal(saleTestData.Quantity, actualSales.Quantity);
-                Assert.Equal(itemsTestData.Id, actualSales.ItemId);
+                Assert.That(actualIvnItem.Quantity, Is.EqualTo(110.5m - inventoryTestData.Quantity ));
+                Assert.That(actualIvnItem.ItemId, Is.EqualTo(inventoryTestData.ItemId));
+
+                Assert.That(actualItem.Price, Is.EqualTo(itemsTestData.Price+.5m));
+
+                Assert.That(actualSales.ItemId, Is.EqualTo(saleTestData.ItemId));
+                Assert.That(actualSales.Quantity, Is.EqualTo(saleTestData.Quantity));
+                Assert.That(actualSales.TotalPrice, Is.EqualTo(saleTestData.TotalPrice));
+
             }
-            catch (Exception)
+            catch (System.Exception)
             {
                 throw;
             }
             finally
             {
-                queryExecutorClient.Delete<Sales>(saleTestData, new string[] { "ItemId" }, "Sale");
-                queryExecutorClient.Delete<Inventory>(inventoryTestData, new string[] { "ItemId" }, null, "dboInvn");
-                queryExecutorClient.Delete<Items>(itemsTestData, new string[] { "Id" }, "Item");
+                CompositeModelBuilder compositeModelBuilder = new CompositeModelBuilder();
+                compositeModelBuilder.AddDeleteRecordSet<Sales>(saleTestData, new string[] { "ItemId" }, "Sale", "dbo");
+                compositeModelBuilder.AddDeleteRecordSet<Inventory>(inventoryTestData, new string[] { "ItemId" }, null, "dboInvn");
+                compositeModelBuilder.AddDeleteRecordSet<Items>(itemsTestData, new string[] { "Id" }, "Item", "dbo");
+
+                queryExecutorClient.ExecuteCompositeModel(compositeModelBuilder);
                 queryExecutorClient.CommitTransaction();
+
             }
         }
+
     }
 }

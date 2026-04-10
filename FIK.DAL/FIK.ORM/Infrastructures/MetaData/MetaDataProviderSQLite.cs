@@ -1,4 +1,7 @@
-﻿using System;
+﻿using FIK.ORM.Extensions;
+using FIK.ORM.Helpers;
+using FIK.ORM.Infrastructures.Transactions;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
@@ -11,10 +14,12 @@ namespace FIK.ORM.Infrastructures.MetaData
         //private static readonly Lazy<MetaDataProvider> _instance = new Lazy<MetaDataProvider>(() => new MetaDataProvider());
         private static readonly ConcurrentDictionary<string, IEnumerable<MetaDataInfo>> validTablesWithColumns = new ConcurrentDictionary<string, IEnumerable<MetaDataInfo>>();
         private readonly IDbConnection connection;
+        private readonly ITransactionManager _transactionManager;
 
         public MetaDataProviderSQLite(IDbConnection connection)
         {
             this.connection = connection;
+            _transactionManager = new TransactionManager(connection);
         }
 
         public bool IsValidTable(string schemaName, string tableName)
@@ -40,51 +45,56 @@ namespace FIK.ORM.Infrastructures.MetaData
         {
             try
             {
-                using (var command = connection.CreateCommand())
+                _transactionManager.ExecuteInTransaction(scope =>
                 {
-                    command.CommandText = "pragma table_info(@TableName); ";
-                    var parameter = command.CreateParameter();
-                    parameter.ParameterName = "@TableName";
-                    parameter.Value = tableName;
-                    command.Parameters.Add(parameter);
-
-                    /*
-                     * The pragma table_info returns the following columns:
-                     * 0: cid (Column ID)
-                     * 1: name (Column Name)
-                     * 2: type (Data Type)
-                     * 3: notnull (Not Null Flag)
-                     * 4: dflt_value (Default Value)
-                     * 5: pk (Primary Key Flag)
-                     * 
-                     * cid	name	type	notnull	dflt_value	pk
-                        0	sId	    INTEGER	1	    NULL	    1
-                        1	sName	TEXT	1	    NULL	    0
-                        2	Age	    NUMERIC	0	    NULL	    0
-                     */
-
-                    var columns = new List<MetaDataInfo>();
-                    using (var reader = command.ExecuteReader())
+                    using (var command = connection.CreateCommand())
                     {
-                        while (reader.Read())
+                        command.Transaction = scope.Transaction;
+                        command.CommandText = $"pragma table_info([{tableName}]); ";
+                        //var parameter = command.CreateParameter();
+                        //parameter.ParameterName = "@TableName";
+                        //parameter.Value = tableName;
+                        //command.Parameters.Add(parameter);
+
+                        /*
+                         * The pragma table_info returns the following columns:
+                         * 0: cid (Column ID)
+                         * 1: name (Column Name)
+                         * 2: type (Data Type)
+                         * 3: notnull (Not Null Flag)
+                         * 4: dflt_value (Default Value)
+                         * 5: pk (Primary Key Flag)
+                         * 
+                         * cid	name	type	notnull	dflt_value	pk
+                            0	sId	    INTEGER	1	    NULL	    1
+                            1	sName	TEXT	1	    NULL	    0
+                            2	Age	    NUMERIC	0	    NULL	    0
+                         */
+
+                        var columns = new List<MetaDataInfo>();
+                        using (var reader = command.ExecuteReader())
                         {
-                            columns.Add(new MetaDataInfo
-                            (
-                                reader.GetString(1), //ColumnName
-                                reader.GetInt32(0),//OrdinalPosition
-                                reader.IsDBNull(4) ? null! : reader.GetString(4), //ColumnDefault 
-                                reader.GetString(3), //IsNullable
-                                reader.GetString(2), //DataType
-                                null, //CharacterMaximumLength
-                                null , //NumericPrecision
-                                null , //NumericPrecisionRadix
-                                null , //NumericScale
-                                reader.GetInt32(5) == 1 && (reader.GetString(2).Equals("NUMERIC", StringComparison.OrdinalIgnoreCase) || reader.GetString(2).Equals("INTEGER", StringComparison.OrdinalIgnoreCase)) //IdentityColumn
-                            ));
+                            while (reader.Read())
+                            {
+                                columns.Add(new MetaDataInfo
+                                (
+                                  reader.GetValueOrDefault<string>("name") , //ColumnName
+                                  reader.GetValueOrDefault<int>("cid"), //OrdinalPosition
+                                  reader.GetValueOrDefault<string>("dflt_value"), //ColumnDefault 
+                                  reader.GetValueOrDefault<string>("notnull"), //IsNullable
+                                  reader.GetValueOrDefault<string>("type"), //DataType
+                                    null, //CharacterMaximumLength
+                                    null, //NumericPrecision
+                                    null, //NumericPrecisionRadix
+                                    null, //NumericScale
+                                    reader.GetValueOrDefault<int>("pk") == 1 && (reader.GetValueOrDefault<string>("type").ToLower().Contains("numeric") || reader.GetValueOrDefault<string>("type").Equals("bigint", StringComparison.OrdinalIgnoreCase)) //IdentityColumn
+                                ));
+                            }
                         }
+                        validTablesWithColumns.TryAdd(tableName, columns);
                     }
-                    validTablesWithColumns.TryAdd(tableName, columns);
-                }
+                    scope.Commit();
+                });
             }
             catch (Exception ex)
             {

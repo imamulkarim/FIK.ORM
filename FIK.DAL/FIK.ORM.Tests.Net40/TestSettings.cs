@@ -22,6 +22,20 @@ namespace FIK.ORM.Tests.Net40
             }
         }
 
+        public static string ConnectionStringSqlite
+        {
+            get
+            {
+                var connectionString = ConfigurationManager.ConnectionStrings["TestDatabaseSqLite"];
+                if (connectionString == null || string.IsNullOrWhiteSpace(connectionString.ConnectionString))
+                {
+                    throw new InvalidOperationException("Missing 'TestDatabase' connection string in App.config.");
+                }
+
+                return connectionString.ConnectionString;
+            }
+        }
+
         public static string DatabaseProvider
         {
             get

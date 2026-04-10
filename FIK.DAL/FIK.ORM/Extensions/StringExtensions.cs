@@ -14,5 +14,14 @@ namespace FIK.ORM.Extensions
             // Basic sanitization: Escape single quotes (SQL standard)
             return input.Replace("'", "''");
         }
+
+        public static string GetOnlyTableName(this string fullTableName)
+        {
+            if (fullTableName.Contains("."))
+            {
+                return fullTableName.Split('.').Last();
+            }
+            return fullTableName;
+        }
     }
 }

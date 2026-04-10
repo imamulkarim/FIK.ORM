@@ -2,7 +2,7 @@ using FIK.ORM.Tests.Share.Models;
 
 namespace FIK.ORM.Tests.Net6;
 
-public class QueryExecutorClientTest
+public class SQLQueryExecutorClientTest
 {
     [Fact]
     public void ShouldInsertSingleRecordInDefaultSchema_WhenNoSchemaProvided()
