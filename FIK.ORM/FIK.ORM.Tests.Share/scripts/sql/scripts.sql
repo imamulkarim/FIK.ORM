@@ -1,0 +1,87 @@
+﻿USE [FIK_ORM_Test]
+GO
+
+/****** Object:  Table [dbo].[Item]    Script Date: 4/7/2026 4:49:00 PM ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE [dbo].[Item](
+	[Id] [bigint] NOT NULL,
+	[Name] [NVARCHAR](50) NULL,
+	[Price] [DECIMAL](18, 4) NULL,
+ CONSTRAINT [PK_Item] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+
+/****** Object:  Table [dbo].[Sale]    Script Date: 4/7/2026 4:49:47 PM ******/
+
+CREATE TABLE [dbo].[Sale](
+	[Id] [bigint] NOT NULL,
+	[ItemId] [bigint] NULL,
+	[Quantity] [DECIMAL](18, 4) NULL,
+	[TotalPrice] [DECIMAL](18, 4) NULL,
+ CONSTRAINT [PK_Sale] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+ALTER TABLE [dbo].[Sale]  WITH CHECK ADD  CONSTRAINT [FK_Sale_Item] FOREIGN KEY([ItemId])
+REFERENCES [dbo].[Item] ([Id])
+GO
+
+ALTER TABLE [dbo].[Sale] CHECK CONSTRAINT [FK_Sale_Item]
+GO
+
+
+/****** Object:  Table [dboInvn].[Inventory]    Script Date: 4/7/2026 4:50:11 PM ******/
+
+CREATE SCHEMA [dboInvn];
+GO
+
+
+CREATE TABLE [dboInvn].[Inventory](
+	[Id] [bigint] IDENTITY(1,1) NOT NULL,
+	[ItemId] [bigint] NULL,
+	[Quantity] [DECIMAL](18, 4) NULL,
+ CONSTRAINT [PK_Inventory] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+ALTER TABLE [dboInvn].[Inventory]  WITH CHECK ADD  CONSTRAINT [FK_Inventory_Item] FOREIGN KEY([ItemId])
+REFERENCES [dbo].[Item] ([Id])
+GO
+
+ALTER TABLE [dboInvn].[Inventory] CHECK CONSTRAINT [FK_Inventory_Item]
+GO
+
+
+
+/****** Object:  Table [dbo].[ItemBlob]    Script Date: 4/12/2026 9:18:04 PM ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE [dbo].[ItemBlob](
+	[Id] [bigint]  NOT NULL,
+	[BlobData] [image] NULL,
+ CONSTRAINT [PK_ItemBlob] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+

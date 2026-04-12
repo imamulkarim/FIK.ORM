@@ -1,0 +1,20 @@
+﻿docker network create pgnet
+
+
+docker run --name pg --network pgnet -e POSTGRES_PASSWORD=data -d -p 5432:5432 postgres
+user: postgres
+password: data
+
+docker run --name pgadmin --network pgnet -p 80:80 -e PGADMIN_DEFAULT_EMAIL=imamul.karim@gmail.com -e PGADMIN_DEFAULT_PASSWORD=data -d dpage/pgadmin4
+
+http://localhost:80
+user: imamul.karim@gmail.com
+password: data
+
+Add a new server in pgAdmin with the following details:
+Name: pg
+Host name/address: pg
+Port: 5432
+Maintenance database: postgres
+Username: postgres
+Password: data
