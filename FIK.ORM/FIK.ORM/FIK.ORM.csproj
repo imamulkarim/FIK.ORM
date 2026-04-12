@@ -7,7 +7,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <!-- NuGet Metadata -->
     <PackageId>FIK.ORM</PackageId>
-    <Version>2.0.0</Version>
+    <Version>2.0.1</Version>
     <Title>FIK.ORM - Micro ORM for .NET</Title>
     <Authors>Fazle Imamul Karim</Authors>
     <Description>
@@ -17,12 +17,31 @@
     </Description>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <PackageProjectUrl>https://github.com/imamulkarim/FIK.DAL</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/imamulkarim/FIK.DAL</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/imamulkarim/FIK.ORM</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/imamulkarim/FIK.ORM</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageTags>orm;sql;micro-orm;query-generator;crud;async</PackageTags>
+    <PackageTags>orm;sql;micro-orm;query-generator;crud;batch-operations;upsert;sql-server;sqlite;postgresql</PackageTags>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+
+    <!-- Licensing - Using SPDX expression (recommended) -->
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <!--<PackageLicenseExpression>MIT</PackageLicenseExpression>-->
+
+    <!-- Package Content -->
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <ReleaseNotes>https://github.com/imamulkarim/FIK.ORM/releases</ReleaseNotes>
+
+    <!-- Build Configuration -->
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <IncludeSource>false</IncludeSource>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath=""/>
+    <None Include="LICENSE" Pack="true" PackagePath=""/>
+  </ItemGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netstandard2.0|AnyCPU'">
     <WarningLevel>1</WarningLevel>
@@ -63,13 +82,6 @@
     <PackageReference Include="Microsoft.Data.Sqlite.Core" Version="8.0.25" />-->
     <PackageReference Include="System.Data.SqlClient" Version="4.8.6" />
     <PackageReference Include="System.Data.SQLite" Version="1.0.118" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="..\..\LICENSE">
-      <Pack>True</Pack>
-      <PackagePath></PackagePath>
-    </None>
   </ItemGroup>
 
   <ItemGroup>
