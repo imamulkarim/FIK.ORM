@@ -1,0 +1,28 @@
+Run using - powershell
+
+all
+& "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\TestWindow\vstest.console.exe" `
+  "D:\CODE\Github\FIK.DAL\FIK.DAL\FIK.ORM.Tests.Net40\bin\Debug\net40\FIK.ORM.Tests.Net40.dll" `
+  /Tests:TransactionManagerTests `
+  /TestAdapterPath:"D:\.nuget\packages\nunit3testadapter\4.5.0\build\net462"
+
+  single test
+& "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\TestWindow\vstest.console.exe" `
+  "D:\CODE\Github\FIK.DAL\FIK.DAL\FIK.ORM.Tests.Net40\bin\Debug\net40\FIK.ORM.Tests.Net40.dll" `
+  /Tests:BeginTransaction_CreatesActiveScope `
+  /TestAdapterPath:"D:\.nuget\packages\nunit3testadapter\4.5.0\build\net462"
+
+
+  all
+  & "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\TestWindow\vstest.console.exe" `
+  "D:\CODE\Github\FIK.DAL\FIK.DAL\FIK.ORM.Tests.Net40\bin\Debug\net40\FIK.ORM.Tests.Net40.dll" `
+  /Tests:QueryExecutorClientTest `
+  /TestAdapterPath:"D:\.nuget\packages\nunit3testadapter\4.5.0\build\net462"
+
+
+Run using - vs code
+
+vstest.console.exe path:
+C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\TestWindow\vstest.console.exe
+Adapter path:
+D:\.nuget\packages\nunit3testadapter\4.5.0\build\net462
