@@ -7,5 +7,7 @@ namespace FIK.ORM.Tests.Share.Models
         public long Id { get; set; }
         public string Name { get; set; }
         public decimal Price { get; set; }
+
+        public int NonDbProperty { get; set; }
     }
 }
